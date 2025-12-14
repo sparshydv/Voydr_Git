@@ -63,7 +63,7 @@ Before running this project, ensure you have the following installed:
      JWT_SECRET=your_jwt_secret_key
      GROQ_API_KEY=your_groq_api_key
      ```
-     - Obtain a Groq API key from [Groq Console](https://console.groq.com/).
+     - **Groq API Key**: Sign up at [Groq Console](https://console.groq.com/) to get a free API key. This is required for AI-powered features like report generation and insights.
 
 3. **Frontend Setup**:
    ```bash

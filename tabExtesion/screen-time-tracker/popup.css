@@ -1,0 +1,27 @@
+body {
+    background-color: #1a202c; /* Tailwind bg-gray-900 */
+    color: white; /* Tailwind text-white */
+    padding: 1rem; /* Tailwind p-4 */
+    width: 16rem; /* Tailwind w-64 */
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    font-size: 1.25rem; /* Tailwind text-xl */
+    font-weight: 600; /* Tailwind font-semibold */
+    margin-bottom: 1rem; /* Tailwind mb-4 */
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    background: #2d3748; /* Tailwind bg-gray-800 */
+    padding: 0.5rem;
+    border-radius: 0.375rem; /* Tailwind rounded-md */
+    margin-bottom: 0.5rem; /* Tailwind space-y-2 */
+    text-align: center;
+}

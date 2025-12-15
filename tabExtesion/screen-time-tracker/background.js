@@ -29,11 +29,15 @@ chrome.runtime.onMessageExternal.addListener((msg, sender, sendResponse) => {
 // ==================================================
 // LOAD USER ON EXTENSION START
 // ==================================================
-chrome.storage.local.get(["user"], (res) => {
+chrome.storage.local.get(["user", "siteTimeData"], (res) => {
   if (res.user) {
     userId = res.user._id;
     console.log("✅ Loaded user:", userId);
     loadLimits();
+  }
+  if (res.siteTimeData) {
+    siteTimeData = res.siteTimeData;
+    console.log("✅ Loaded siteTimeData:", siteTimeData);
   }
 });
 
@@ -109,6 +113,10 @@ async function updateTimeSpent() {
 
     const domain = new URL(tab.url).hostname.replace(/^www\./, "");
     siteTimeData[domain] = (siteTimeData[domain] || 0) + elapsed;
+
+    chrome.storage.local.set({ siteTimeData }, () => {
+      console.log("💾 Saved siteTimeData");
+    });
 
     console.log(`⏳ ${domain}: ${siteTimeData[domain].toFixed(2)} sec`);
 

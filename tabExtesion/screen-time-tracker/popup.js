@@ -1,58 +1,58 @@
 document.addEventListener("DOMContentLoaded", () => {
-    let siteList = document.getElementById("siteList");
-  
-    chrome.storage.local.get(["siteTimeData"], (result) => {
-      let siteTimeData = result.siteTimeData || {};
-  
-      Object.entries(siteTimeData).forEach(([site, time]) => {
-        let li = document.createElement("li");
-        li.textContent = `${site}: ${Math.floor(time / 60)} min ${Math.floor(time % 60)} sec`;
-        siteList.appendChild(li);
-      });
+  const siteList = document.getElementById("siteList");
+  const resetBtn = document.getElementById("resetButton");
+  const syncBtn = document.getElementById("syncButton");
+
+  // ===============================
+  // LOAD & DISPLAY DATA
+  // ===============================
+  chrome.storage.local.get(["siteTimeData"], (result) => {
+    const siteTimeData = result.siteTimeData || {};
+
+    siteList.innerHTML = "";
+
+    if (Object.keys(siteTimeData).length === 0) {
+      siteList.innerHTML = "<li>No data yet</li>";
+      return;
+    }
+
+    Object.entries(siteTimeData).forEach(([site, time]) => {
+      const li = document.createElement("li");
+      li.textContent = `${site}: ${Math.floor(time / 60)} min ${Math.floor(time % 60)} sec`;
+      siteList.appendChild(li);
     });
   });
 
-  document.getElementById("resetButton").addEventListener("click", () => {
+  // ===============================
+  // RESET DATA
+  // ===============================
+  resetBtn.addEventListener("click", () => {
     chrome.storage.local.set({ siteTimeData: {} }, () => {
-      // Clear the displayed list
-      document.getElementById("siteList").innerHTML = "";
+      siteList.innerHTML = "<li>Data reset</li>";
     });
   });
 
+  // ===============================
+  // SYNC DATA (CORRECT PAYLOAD)
+  // ===============================
+  syncBtn.addEventListener("click", () => {
+    chrome.storage.local.get(["siteTimeData", "user"], (result) => {
+      if (!result.user) {
+        console.error("❌ No user logged in");
+        return;
+      }
 
-  document.getElementById("syncButton").addEventListener("click", () => {
-    chrome.storage.local.get(["siteTimeData"], (result) => {
-        fetch("http://localhost:5000/sync", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(result.siteTimeData),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Sync successful:", data);
-        })
-        .catch(error => console.error("Error syncing data:", error));
+      fetch("http://localhost:5000/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: result.user._id,
+          usage: result.siteTimeData || {}
+        }),
+      })
+        .then(res => res.json())
+        .then(data => console.log("✅ Sync successful:", data))
+        .catch(err => console.error("❌ Sync failed:", err));
     });
+  });
 });
-
-  
-
-  // //ascending order
-  // Object.entries(siteTimeData)
-  // .sort((a, b) => b[1] - a[1]) // Sort by time spent (descending)
-  // .forEach(([site, time]) => {
-  //   let li = document.createElement("li");
-  //   li.textContent = `${site}: ${Math.floor(time / 60)} min ${Math.floor(time % 60)} sec`;
-  //   siteList.appendChild(li);
-  // });
-
-
-//   //total time
-// let totalTime = Object.values(siteTimeData).reduce((sum, time) => sum + time, 0);
-// let totalTimeElement = document.createElement("li");
-// totalTimeElement.textContent = `Total: ${Math.floor(totalTime / 60)} min ${Math.floor(totalTime % 60)} sec`;
-// totalTimeElement.classList.add("font-bold"); // Add some styling
-// siteList.appendChild(totalTimeElement);
-

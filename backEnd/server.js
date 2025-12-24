@@ -171,10 +171,16 @@ app.post("/sync", async (req, res) => {
 });
 
 
-// Get All Data
+// Get All Data for a User
 app.get("/data", async (req, res) => {
   try {
-    const data = await ScreenTime.find({});
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ error: "UserId is required" });
+    }
+    
+    const data = await ScreenTime.find({ userId });
     res.json(data);
   } catch (err) {
     console.log(err);

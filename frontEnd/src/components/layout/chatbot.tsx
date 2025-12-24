@@ -15,12 +15,16 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, newMsg]);
 
     const userId = user?._id;
+    const messageText = input;
+
+    // Clear input immediately (don't wait for API response)
+    setInput("");
 
     try {
       const res = await axios.post("http://127.0.0.1:5000/chatbot", {
  
         userId,
-        message: input,
+        message: messageText,
       });
 
       const botReply = res.data.reply || "Sorry, I couldn't understand.";
@@ -32,8 +36,6 @@ export default function Chatbot() {
         { sender: "bot", text: "Error connecting to AI." },
       ]);
     }
-
-    setInput("");
   };
 
   return (

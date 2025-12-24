@@ -30,6 +30,9 @@ export function Login() {
       localStorage.setItem("user", JSON.stringify(user));
       console.log("React saved user:", user);
 
+      // Trigger update for header
+      window.dispatchEvent(new Event("userLoggedIn"));
+
       // ⭐ SAVE INSIDE CHROME EXTENSION
       if (window.chrome?.runtime?.sendMessage) {
   chrome.runtime.sendMessage(

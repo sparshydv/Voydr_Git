@@ -14,6 +14,26 @@ export function Header() {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     setUser(storedUser ? JSON.parse(storedUser) : null);
+
+    // Listen for storage changes (login/logout from other tabs)
+    const handleStorageChange = () => {
+      const updatedUser = localStorage.getItem("user");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+
+    // Listen for login event
+    const handleUserLoggedIn = () => {
+      const updatedUser = localStorage.getItem("user");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("userLoggedIn", handleUserLoggedIn);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("userLoggedIn", handleUserLoggedIn);
+    };
   }, []);
 
   // Logout

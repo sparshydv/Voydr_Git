@@ -38,7 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
   syncBtn.addEventListener("click", () => {
     chrome.storage.local.get(["siteTimeData", "user"], (result) => {
       if (!result.user) {
-        console.error("❌ No user logged in");
+        alert("❌ No user logged in. Please login on the website first!");
+        console.error("❌ No user logged in - user data not found in storage");
         return;
       }
 
@@ -51,8 +52,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }),
       })
         .then(res => res.json())
-        .then(data => console.log("✅ Sync successful:", data))
-        .catch(err => console.error("❌ Sync failed:", err));
+        .then(data => {
+          console.log("✅ Sync successful:", data);
+          alert("✅ Data synced successfully!");
+        })
+        .catch(err => {
+          console.error("❌ Sync failed:", err);
+          alert("❌ Sync failed. Check console for details.");
+        });
     });
   });
 });

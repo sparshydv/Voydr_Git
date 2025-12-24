@@ -34,15 +34,21 @@ export function Login() {
       window.dispatchEvent(new Event("userLoggedIn"));
 
       // ⭐ SAVE INSIDE CHROME EXTENSION
-      if (window.chrome?.runtime?.sendMessage) {
-  chrome.runtime.sendMessage(
-    "gkikdgoeembohkepljdlphmmkhnghfma",   // YOUR EXTENSION ID
-    { type: "SAVE_USER", user: res.data.user },
-    (res) => console.log("🔥 EXTENSION RESPONSE:", res)
-  );
-} else {
-  console.log("⛔ Cannot send message to extension");
-}
+      try {
+        if (window.chrome?.runtime?.sendMessage) {
+          chrome.runtime.sendMessage(
+            "ppkjcndbknpjelfhemlengekmbaacoah",
+            { type: "SAVE_USER", user: res.data.user },
+            (response) => {
+              if (response) {
+                console.log("🟢 User sent to extension:", response);
+              }
+            }
+          );
+        }
+      } catch (extensionErr) {
+        console.warn("⚠️ Could not send to extension:", extensionErr);
+      }
 
 
       alert("Login successful!");

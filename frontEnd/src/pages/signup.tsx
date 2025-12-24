@@ -31,7 +31,7 @@ export function Signup() {
         try {
           if (window.chrome?.runtime?.sendMessage) {
             chrome.runtime.sendMessage(
-              chrome.runtime.id,
+              "ppkjcndbknpjelfhemlengekmbaacoah",
               { type: "SAVE_USER", user },
               () => console.log("🟢 User sent to extension after signup")
             );

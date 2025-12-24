@@ -77,6 +77,11 @@ export default function Chatbot() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  sendMessage();
+                }
+              }}
               className="flex-1 border rounded-lg p-2 text-sm"
               placeholder="Ask something..."
             />

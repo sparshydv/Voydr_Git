@@ -55,7 +55,10 @@ export function Login() {
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
 
-        <h2 className="text-center text-3xl font-bold">Sign in to your account</h2>
+        <div className="text-center">
+          <h2 className="text-3xl font-bold">Log In to your account</h2>
+          <p className="text-gray-600 text-sm mt-2">you already exist in our database</p>
+        </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
 
@@ -87,7 +90,7 @@ export function Login() {
             type="submit"
             style={{ width: "100%", background: "#4F46E5", color: "white" }}
           >
-            Sign In
+            Login
           </Button>
 
         </form>

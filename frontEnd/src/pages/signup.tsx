@@ -27,21 +27,26 @@ export function Signup() {
         // ✅ SAVE USER FOR WEBSITE
         localStorage.setItem("user", JSON.stringify(user));
 
-        // ✅ SEND USER TO EXTENSION
-        if (window.chrome?.runtime?.sendMessage) {
-          chrome.runtime.sendMessage(
-            chrome.runtime.id,
-            { type: "SAVE_USER", user },
-            () => console.log("🟢 User sent to extension after signup")
-          );
+        // ✅ SEND USER TO EXTENSION (non-blocking)
+        try {
+          if (window.chrome?.runtime?.sendMessage) {
+            chrome.runtime.sendMessage(
+              chrome.runtime.id,
+              { type: "SAVE_USER", user },
+              () => console.log("🟢 User sent to extension after signup")
+            );
+          }
+        } catch (extensionErr) {
+          console.warn("⚠️ Could not send to extension:", extensionErr);
         }
 
         alert("Account created successfully!");
-        navigate("/dashboard");
+        navigate("/login");
       } else {
         alert(res.data.message);
       }
     } catch (err) {
+      console.error("❌ Signup error:", err);
       alert("Signup failed. Try again.");
       console.log(err);
     }
@@ -88,7 +93,7 @@ export function Signup() {
             />
           </div>
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" style={{ width: "100%", background: "#4F46E5", color: "white" }}>
             Sign Up
           </Button>
 

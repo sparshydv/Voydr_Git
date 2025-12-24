@@ -129,8 +129,13 @@ const screenTimeSchema = new mongoose.Schema({
   userId: String,
   site: String,
   timeSpent: Number,
+  date: { type: String, required: true }, // Format: YYYY-MM-DD for daily aggregation
   timestamp: { type: Date, default: Date.now }
 });
+
+// Create compound index for efficient queries
+screenTimeSchema.index({ userId: 1, site: 1, date: 1 }, { unique: true });
+
 const ScreenTime = mongoose.model("ScreenTime", screenTimeSchema);
 
 app.post("/sync", async (req, res) => {
@@ -149,20 +154,51 @@ app.post("/sync", async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing usage object" });
     }
 
-    const docs = Object.entries(usage).map(([site, time]) => ({
-      userId,
-      site,
-      timeSpent: Number(time),
-      timestamp: new Date()
-    }));
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
 
-    console.log("📥 Inserting sample:", docs.slice(0, 4));
+    let updated = 0;
+    let inserted = 0;
 
-    const inserted = await ScreenTime.insertMany(docs);
+    // Process each site's usage
+    for (const [site, time] of Object.entries(usage)) {
+      const timeSpent = Number(time);
+      
+      if (timeSpent <= 0) continue; // Skip if no time spent
 
-    console.log("✅ Inserted:", inserted.length);
+      try {
+        // Try to update existing record for today
+        const result = await ScreenTime.findOneAndUpdate(
+          { userId, site, date: today },
+          { 
+            $inc: { timeSpent: timeSpent }, // Add to existing time
+            $set: { timestamp: new Date() } // Update timestamp
+          },
+          { new: true, upsert: true } // Create if doesn't exist
+        );
 
-    res.json({ success: true, inserted: inserted.length });
+        if (result) {
+          // Check if it was an update or insert
+          const isNew = result.timeSpent === timeSpent;
+          if (isNew) {
+            inserted++;
+          } else {
+            updated++;
+          }
+        }
+      } catch (err) {
+        console.error(`❌ Error processing ${site}:`, err.message);
+      }
+    }
+
+    console.log(`✅ Sync complete: ${inserted} inserted, ${updated} updated`);
+
+    res.json({ 
+      success: true, 
+      inserted, 
+      updated,
+      date: today 
+    });
 
   } catch (err) {
     console.error("❌ /sync error:", err);

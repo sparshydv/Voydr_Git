@@ -3,6 +3,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { fetchScreenTimeData } from "@/lib/api"; // Import API function
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { formatSiteName } from "@/lib/utils";
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -19,6 +20,12 @@ export function Reports() {
 
     async function fetchScreenTime() {
         const data = await fetchScreenTimeData();
+        
+        // Aggregate data by site first (combine duplicates)
+        const aggregatedBySite: Record<string, number> = {};
+        data.forEach((entry: any) => {
+            aggregatedBySite[entry.site] = (aggregatedBySite[entry.site] || 0) + entry.timeSpent;
+        });
         
         // Format data for daily usage chart
         const dailyBreakdown = data.reduce((acc: any, entry: any) => {
@@ -37,21 +44,28 @@ export function Reports() {
             Other: 0,
         };
 
-        data.forEach((entry: any) => {
-            if (entry.site.includes("github") || entry.site.includes("figma")) categoryBreakdown.Work += entry.timeSpent;
-            else if (entry.site.includes("youtube") || entry.site.includes("netflix")) categoryBreakdown.Entertainment += entry.timeSpent;
-            else if (entry.site.includes("facebook") || entry.site.includes("instagram")) categoryBreakdown["Social Media"] += entry.timeSpent;
-            else categoryBreakdown.Other += entry.timeSpent;
+        Object.entries(aggregatedBySite).forEach(([site, timeSpent]) => {
+            if (site.includes("github") || site.includes("figma")) categoryBreakdown.Work += timeSpent;
+            else if (site.includes("youtube") || site.includes("netflix")) categoryBreakdown.Entertainment += timeSpent;
+            else if (site.includes("facebook") || site.includes("instagram")) categoryBreakdown["Social Media"] += timeSpent;
+            else categoryBreakdown.Other += timeSpent;
         });
 
         setCategoryData(
-            Object.entries(categoryBreakdown).map(([name, value]) => ({ name, value: Math.round((value / data.reduce((acc, e) => acc + e.timeSpent, 0)) * 100) }))
+            Object.entries(categoryBreakdown).map(([name, value]) => {
+                const total = Object.values(aggregatedBySite).reduce((acc, v) => acc + v, 0);
+                return { name, value: Math.round((value / total) * 100) };
+            })
         );
 
-        // Format data for most used applications
-        const sortedApps = [...data].sort((a, b) => b.timeSpent - a.timeSpent).slice(0, 5);
+        // Format data for most used applications (using aggregated data)
+        const sortedApps = Object.entries(aggregatedBySite)
+            .map(([site, timeSpent]) => ({ site, timeSpent }))
+            .sort((a, b) => b.timeSpent - a.timeSpent)
+            .slice(0, 5);
+            
         setTopApps(sortedApps.map((entry) => ({
-            name: entry.site,
+            name: formatSiteName(entry.site),
             time: `${Math.floor(entry.timeSpent / 3600)}h ${Math.floor((entry.timeSpent % 3600) / 60)}m`,
             category: categoryBreakdown.Work > entry.timeSpent ? "Work" : categoryBreakdown.Entertainment > entry.timeSpent ? "Entertainment" : "Other"
         })));

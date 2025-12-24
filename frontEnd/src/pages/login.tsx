@@ -33,19 +33,13 @@ export function Login() {
       // Trigger update for header
       window.dispatchEvent(new Event("userLoggedIn"));
 
-      // ⭐ SAVE INSIDE CHROME EXTENSION
+      // ⭐ SAVE INSIDE CHROME EXTENSION (using bridge)
       try {
-        if (window.chrome?.runtime?.sendMessage) {
-          chrome.runtime.sendMessage(
-            "ppkjcndbknpjelfhemlengekmbaacoah",
-            { type: "SAVE_USER", user: res.data.user },
-            (response) => {
-              if (response) {
-                console.log("🟢 User sent to extension:", response);
-              }
-            }
-          );
-        }
+        window.postMessage({
+          type: "SAVE_USER_TO_EXTENSION",
+          user: res.data.user
+        }, "*");
+        console.log("📤 Sent user to extension via postMessage");
       } catch (extensionErr) {
         console.warn("⚠️ Could not send to extension:", extensionErr);
       }

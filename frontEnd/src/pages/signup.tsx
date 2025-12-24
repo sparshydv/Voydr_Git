@@ -27,15 +27,13 @@ export function Signup() {
         // ✅ SAVE USER FOR WEBSITE
         localStorage.setItem("user", JSON.stringify(user));
 
-        // ✅ SEND USER TO EXTENSION (non-blocking)
+        // ✅ SEND USER TO EXTENSION (using bridge)
         try {
-          if (window.chrome?.runtime?.sendMessage) {
-            chrome.runtime.sendMessage(
-              "ppkjcndbknpjelfhemlengekmbaacoah",
-              { type: "SAVE_USER", user },
-              () => console.log("🟢 User sent to extension after signup")
-            );
-          }
+          window.postMessage({
+            type: "SAVE_USER_TO_EXTENSION",
+            user
+          }, "*");
+          console.log("📤 Sent user to extension via postMessage after signup");
         } catch (extensionErr) {
           console.warn("⚠️ Could not send to extension:", extensionErr);
         }

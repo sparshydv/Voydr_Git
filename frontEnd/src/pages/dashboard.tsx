@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { fetchScreenTimeData } from "@/lib/api"; // Import API function
 import { Button } from "@/components/ui/button";
+import { formatSiteName } from "@/lib/utils";
 
 export function Dashboard() {
     const [screenTimeData, setScreenTimeData] = useState([]);
@@ -12,10 +13,21 @@ export function Dashboard() {
 
     async function fetchScreenTime() {
         const data = await fetchScreenTimeData();
-        const formattedData = data.map((entry: any) => ({
-            name: entry.site, // Website name
-            screenTime: Math.floor(entry.timeSpent / 60), // Convert seconds to minutes
+        
+        // Aggregate data by site (combine duplicates)
+        const aggregated: Record<string, number> = {};
+        
+        data.forEach((entry: any) => {
+            const siteName = formatSiteName(entry.site);
+            aggregated[siteName] = (aggregated[siteName] || 0) + entry.timeSpent;
+        });
+        
+        // Convert to array format for chart
+        const formattedData = Object.entries(aggregated).map(([name, totalTime]) => ({
+            name,
+            screenTime: Math.floor(totalTime / 60), // Convert seconds to minutes
         }));
+        
         setScreenTimeData(formattedData);
     }
 

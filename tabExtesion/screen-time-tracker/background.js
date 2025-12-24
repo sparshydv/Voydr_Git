@@ -12,12 +12,30 @@ let siteLimits = {}; // { domain: seconds }
 // ==================================================
 // RECEIVE USER FROM WEBSITE (LOGIN)
 // ==================================================
+// For external messages (with extension ID)
 chrome.runtime.onMessageExternal.addListener((msg, sender, sendResponse) => {
   if (msg.type === "SAVE_USER" && msg.user) {
     userId = msg.user._id;
 
     chrome.storage.local.set({ user: msg.user }, () => {
       console.log("🟢 User saved:", userId);
+      loadLimits();
+    });
+
+    sendResponse({ success: true });
+  }
+  return true;
+});
+
+// For internal messages (from content script/bridge)
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  console.log("📨 Background received message:", msg);
+  
+  if (msg.type === "SAVE_USER" && msg.user) {
+    userId = msg.user._id;
+
+    chrome.storage.local.set({ user: msg.user }, () => {
+      console.log("🟢 User saved via bridge:", userId);
       loadLimits();
     });
 
